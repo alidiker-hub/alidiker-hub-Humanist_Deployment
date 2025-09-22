@@ -1,0 +1,31 @@
+﻿<div class="mb-3">
+    <label>Build Configuration</label>
+    <select @bind="Publish.BuildConfiguration" class="form-select">
+        @foreach (var cfg in Enum.GetValues<BuildConfiguration>())
+        {
+            <option value="@cfg">@cfg</option>
+        }
+    </select>
+</div>
+
+<div class="form-check mb-3">
+    <InputCheckbox @bind-Value="Publish.UseAppOffline" class="form-check-input" />
+    <label class="form-check-label">Deploy sırasında App Offline</label>
+</div>
+
+<div class="mb-3">
+    <label>Output Path</label>
+    <InputText @bind-Value="Publish.OutputPath" class="form-control" />
+</div>
+
+<div class="mb-3">
+    <label>Zip Extraction Filter</label>
+    @foreach (var filter in Publish.ZipExtractionFilter)
+    {
+        <span class="badge bg-secondary me-2">@filter</span>
+    }
+</div>
+
+@code {
+    [Parameter] public PublishDefaults Publish { get; set; } = new();
+}

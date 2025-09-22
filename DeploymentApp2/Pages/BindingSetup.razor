@@ -1,0 +1,23 @@
+﻿<div class="row mb-3">
+    <div class="col-md-5">
+        <label>Protocol</label>
+        <select @bind="Binding.Protocol" class="form-select">
+            @foreach (var proto in Enum.GetValues<ProtocolType>())
+            {
+                <option value="@proto">@proto</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label>Host</label>
+        <InputText @bind-Value="Binding.Host" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label>Port</label>
+        <InputNumber @bind-Value="Binding.Port" class="form-control" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public BindingConfig Binding { get; set; } = new();
+}

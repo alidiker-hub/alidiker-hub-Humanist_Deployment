@@ -1,0 +1,68 @@
+@page "/iis-deploy-zips"
+
+<div class="container mt-4">
+    <h3 class="mb-4">📦 Çoklu Zip IIS Deploy</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Zip Klasörü</label>
+        <InputText @bind-Value="ZipFolderPath" class="form-control" />
+        <small class="text-muted">Örnek: C:\deploy\zips</small>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Site Name</label>
+            <InputText @bind-Value="SiteName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">App Pool Name</label>
+            <InputText @bind-Value="AppPoolName" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Base Physical Path</label>
+        <InputText @bind-Value="BasePath" class="form-control" />
+        <small class="text-muted">Örnek: C:\inetpub\wwwroot</small>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button class="btn btn-primary btn-lg" @onclick="DeployZips">Tüm Zip'leri IIS'e Deploy Et</button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Status))
+    {
+        <div class="alert alert-info">@Status</div>
+    }
+</div>
+
+@code {
+    string ZipFolderPath = @"C:\Users\ali.diker\Downloads\paketler\admin";
+    string SiteName = "Serhat_Site1";
+    string AppPoolName = ".NET v4.5 Classic";
+    string BasePath = @"C:\inetpub\wwwroot";
+    string Status;
+
+    async Task DeployZips()
+    {
+        try
+        {
+            if (!Directory.Exists(ZipFolderPath))
+            {
+                Status = "⚠️ Belirtilen zip klasörü mevcut değil.";
+                return;
+            }
+
+            Status = "🚀 Deploy işlemi başlatıldı...";
+            await Task.Delay(100);
+
+            ZipDeployer.DeployAllZips(ZipFolderPath, SiteName, AppPoolName, BasePath);
+
+            Status = "✅ Tüm zip dosyaları başarıyla deploy edildi.";
+        }
+        catch (Exception ex)
+        {
+            Status = $"❌ Hata: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,174 @@
+@page "/iis-deploy"
+@inject IJSRuntime JS
+
+<div class="container mt-4">
+    <h3 class="mb-4">🚀 Tayfunnunkisi </h3>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Site Name</label>
+            <InputText @bind-Value="SiteName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">App Path (örnek: /MyApp)</label>
+            <InputText @bind-Value="AppPath" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Application Pool</label>
+            <select @bind="AppPoolName" class="form-select">
+                @foreach (var pool in AvailableAppPools)
+                {
+                    <option value="@pool">@pool</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Build Configuration</label>
+            <select @bind="BuildConfiguration" class="form-select">
+                <option value="Release">Release</option>
+                <option value="Debug">Debug</option>
+                <option value="Custom">Custom</option>
+            </select>
+        </div>
+    </div>
+
+    @if (BuildConfiguration == "Custom")
+    {
+        <div class="mb-3">
+            <label class="form-label">Custom MSBuild Args</label>
+            <InputText @bind-Value="CustomBuildArgs" class="form-control" />
+        </div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label">Project File (.csproj)</label>
+        <div class="input-group">
+            <InputText @bind-Value="ProjectPath" class="form-control" />
+            <button class="btn btn-outline-secondary" @onclick="BrowseProject">Gözat</button>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Yayın Klasörü (varsa hazır .NET publish klasörü)</label>
+        <div class="input-group">
+            <InputText @bind-Value="PublishFolder" class="form-control" />
+            <button class="btn btn-outline-secondary" @onclick="BrowsePublishFolder">Gözat</button>
+        </div>
+    </div>
+
+    <div class="d-grid">
+        <button class="btn btn-primary btn-lg" @onclick="Deploy">Deploy to IIS</button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Status))
+    {
+        <div class="alert alert-info mt-3">@Status</div>
+    }
+</div>
+
+@code {
+
+    DeploymentConfig.AppConfig appConfig = new DeploymentConfig.AppConfig();
+
+
+
+    string SiteName = "Default Web Site"; // appConfig.Sites.First().Name;
+    string AppPath = "/MyApp";
+    string AppPoolName = "";
+    string BuildConfiguration = "Release";
+    string CustomBuildArgs = "";
+    string ProjectPath;
+    string PublishFolder;
+    string Status;
+    List<string> AvailableAppPools = new();
+
+    protected override void OnInitialized()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            LoadAppPools();
+        }
+    }
+
+    void LoadAppPools()
+    {
+        using var serverManager = new Microsoft.Web.Administration.ServerManager();
+        AvailableAppPools = serverManager.ApplicationPools
+            .Select(p => p.Name)
+            .OrderBy(x => x)
+            .ToList();
+
+        AppPoolName = AvailableAppPools.FirstOrDefault() ?? "DefaultAppPool";
+    }
+
+    async Task BrowseProject()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            var path = await JS.InvokeAsync<string>("window.showOpenFileDialog", "csproj");
+            if (!string.IsNullOrWhiteSpace(path))
+                ProjectPath = path;
+        }
+    }
+
+    async Task BrowsePublishFolder()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            var path = await JS.InvokeAsync<string>("window.showFolderDialog");
+            if (!string.IsNullOrWhiteSpace(path))
+                PublishFolder = path;
+        }
+    }
+
+    async Task Deploy()
+    {
+        try
+        {
+            Status = "🚀 Deploy işlemi başlatıldı...";
+
+            string publishPath = null;
+
+            if (!string.IsNullOrWhiteSpace(ProjectPath))
+            {
+                Status = "📦 Proje derleniyor...";
+                publishPath = Path.Combine(Path.GetTempPath(), "deploy_" + Guid.NewGuid());
+
+                string args = BuildConfiguration == "Custom"
+                    ? CustomBuildArgs
+                    : $"-c {BuildConfiguration}";
+
+                DeployHelper.PublishProject(ProjectPath, publishPath, args);
+            }
+            else if (!string.IsNullOrWhiteSpace(PublishFolder))
+            {
+                if (!Directory.Exists(PublishFolder))
+                {
+                    Status = "⚠️ Yayın klasörü geçerli değil.";
+                    return;
+                }
+
+                publishPath = PublishFolder;
+            }
+
+            string appPhysicalPath = publishPath ?? Path.Combine("C:\\inetpub\\wwwroot", AppPath.Trim('/').Replace("/", "\\"));
+
+            if (publishPath != null)
+                DeployHelper.PutAppOffline(AppPath, SiteName);
+
+            DeployHelper.CreateOrUpdateIISApp(SiteName, AppPath, appPhysicalPath, AppPoolName);
+
+            if (publishPath != null)
+                DeployHelper.RemoveAppOffline(AppPath, SiteName);
+
+            Status = $"✅ IIS üzerinde {(publishPath != null ? "deploy işlemi tamamlandı." : "boş site oluşturuldu.")}";
+        }
+        catch (Exception ex)
+        {
+            Status = $"❌ Hata: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,38 @@
+﻿<div class="mb-3">
+    <label class="form-label">App Pool Adı</label>
+    <InputText @bind-Value="AppPool.Name" class="form-control" />
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Runtime</label>
+        <select @bind="AppPool.RuntimeVersion" class="form-select">
+            @foreach (var v in Enum.GetValues<RuntimeVersion>())
+            {
+                <option value="@v">@v</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label>Pipeline</label>
+        <select @bind="AppPool.Pipeline" class="form-select">
+            @foreach (var p in Enum.GetValues<PipelineMode>())
+            {
+                <option value="@p">@p</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label>Identity</label>
+        <select @bind="AppPool.Identity" class="form-select">
+            @foreach (var id in Enum.GetValues<IdentityType>())
+            {
+                <option value="@id">@id</option>
+            }
+        </select>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AppPoolConfig AppPool { get; set; } = new();
+}

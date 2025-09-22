@@ -1,0 +1,15 @@
+﻿<div class="mb-3">
+    <label class="form-label">App Path</label>
+    <InputText @bind-Value="Application.Path" class="form-control" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Physical Path</label>
+    <InputText @bind-Value="Application.PhysicalPath" class="form-control" />
+</div>
+
+<AppPoolSetup AppPool="Application.AppPool" />
+
+@code {
+    [Parameter] public ApplicationConfig Application { get; set; } = new();
+}

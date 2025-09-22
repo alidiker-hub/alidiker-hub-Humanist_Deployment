@@ -1,0 +1,39 @@
+﻿<div class="form-check mb-3">
+    <InputCheckbox @bind-Value="Ssl.Enabled" class="form-check-input" />
+    <label class="form-check-label">SSL Aktif</label>
+</div>
+
+@if (Ssl.Enabled)
+{
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label>Port</label>
+            <InputNumber @bind-Value="Ssl.Port" class="form-control" />
+        </div>
+        <div class="col-md-8">
+            <label>Sertifika</label>
+            <select @bind="Ssl.Thumbprint" class="form-select">
+                @foreach (var cert in ExistingCertificates)
+                {
+                    <option value="@cert.Thumbprint">@cert.Subject (@cert.Thumbprint)</option>
+                }
+            </select>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public SslConfig Ssl { get; set; } = new();
+
+    public List<System.Security.Cryptography.X509Certificates.X509Certificate2> ExistingCertificates { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        using var store = new System.Security.Cryptography.X509Certificates.X509Store(
+            System.Security.Cryptography.X509Certificates.StoreName.My,
+            System.Security.Cryptography.X509Certificates.StoreLocation.LocalMachine);
+
+        store.Open(System.Security.Cryptography.X509Certificates.OpenFlags.ReadOnly);
+        ExistingCertificates = store.Certificates.Cast<System.Security.Cryptography.X509Certificates.X509Certificate2>().ToList();
+    }
+}

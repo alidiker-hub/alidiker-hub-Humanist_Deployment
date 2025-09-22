@@ -1,0 +1,104 @@
+﻿@page "/setup/wizard"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+
+<div class="container mt-4">
+    <h2 class="mb-4">🚀 IIS Setup Wizard</h2>
+
+    <div class="progress mb-4" style="height: 25px;">
+        <div class="progress-bar" role="progressbar"
+             style="width:@ProgressPercent%"
+             aria-valuenow="@CurrentStep" aria-valuemin="1" aria-valuemax="@TotalSteps">
+            Adım @CurrentStep / @TotalSteps
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-3">
+        @if (CurrentStep == 1)
+        {
+            <SiteSetup Site="Config.Sites[0]" />
+        }
+        else if (CurrentStep == 2)
+        {
+            <AppPoolSetup AppPool="Config.Sites[0].AppPool" />
+        }
+        else if (CurrentStep == 3)
+        {
+            <ApplicationSetup Application="TempApp" />
+            <button class="btn btn-outline-secondary mt-2" @onclick="AddApplication">+ Uygulama Ekle</button>
+            <ul class="list-group mt-2">
+                @foreach (var app in Config.Sites[0].Applications)
+                {
+                    <li class="list-group-item">@app.Path → @app.AppPool.Name</li>
+                }
+            </ul>
+        }
+        else if (CurrentStep == 4)
+        {
+            <SslSetup Ssl="Config.Sites[0].Ssl" />
+        }
+        else if (CurrentStep == 5)
+        {
+            <PublishSetup Publish="Config.Publish" />
+        }
+        else if (CurrentStep == 6)
+        {
+            <h5>📋 JSON Önizleme</h5>
+            <pre class="bg-light p-3 rounded">@PreviewJson</pre>
+        }
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-outline-primary" @onclick="Prev" disabled="@(CurrentStep==1)">← Geri</button>
+        <button class="btn btn-primary" @onclick="Next">@NextButtonText</button>
+    </div>
+</div>
+
+@code {
+    private AppConfig Config = new()
+        {
+            Sites = new List<SiteConfig> { new SiteConfig() },
+            Publish = new PublishDefaults()
+        };
+
+    private ApplicationConfig TempApp = new();
+
+    private int CurrentStep { get; set; } = 1;
+    private int TotalSteps { get; set; } = 6;
+
+    private string ProgressPercent => $"{(CurrentStep * 100) / TotalSteps}%";
+
+    private string NextButtonText => CurrentStep == TotalSteps ? "✔ Bitir" : "İleri →";
+
+    private string PreviewJson => JsonSerializer.Serialize(Config, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
+        });
+
+    private void Next()
+    {
+        if (CurrentStep < TotalSteps)
+            CurrentStep++;
+    }
+
+    private void Prev()
+    {
+        if (CurrentStep > 1)
+            CurrentStep--;
+    }
+
+    private void AddApplication()
+    {
+        if (!string.IsNullOrWhiteSpace(TempApp.Path))
+        {
+            Config.Sites[0].Applications.Add(new ApplicationConfig
+                {
+                    Path = TempApp.Path,
+                    PhysicalPath = TempApp.PhysicalPath,
+                    AppPool = TempApp.AppPool
+                });
+            TempApp = new ApplicationConfig();
+        }
+    }
+}

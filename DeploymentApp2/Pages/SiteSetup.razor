@@ -1,0 +1,21 @@
+﻿<div class="mb-3">
+    <label class="form-label">Site Adı</label>
+    <InputText @bind-Value="Site.Name" class="form-control" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Physical Path</label>
+    <InputText @bind-Value="Site.PhysicalPath" class="form-control" />
+</div>
+
+<BindingSetup Binding="Site.Binding" />
+<SslSetup Ssl="Site.Ssl" />
+
+<div class="mb-3">
+    <label class="form-label">App Pool</label>
+    <AppPoolSetup AppPool="Site.AppPool" />
+</div>
+
+@code {
+    [Parameter] public SiteConfig Site { get; set; } = new();
+}
