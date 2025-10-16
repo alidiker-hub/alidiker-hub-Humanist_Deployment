@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
-namespace Contoso.Deployer
+namespace Humanist.Deployer
 {
     #region Manifest Models
     public sealed class SiteManifest
@@ -100,7 +100,7 @@ namespace Contoso.Deployer
         [JsonPropertyName("dynamic")] public bool Dynamic { get; set; } = true;
     }
 
-    // 🔵🟢 Blue/Green – genişletilmiş
+
     public sealed class BlueGreenDef
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = false;
@@ -568,8 +568,8 @@ namespace Contoso.Deployer
             var pool = sm.ApplicationPools[ctx.Manifest.AppPool.Name];
             if (!ctx.DryRun)
             {
-                foreach (var kv in env) pool.EnvironmentVariables[kv.Key] = kv.Value;
-                sm.CommitChanges();
+                //foreach (var kv in env) pool.EnvironmentVariables[kv.Key] = kv.Value;
+                //sm.CommitChanges();
             }
             ctx.Log(PlanActionType.SetEnv, $"set {env.Count} env");
             await Task.CompletedTask;
