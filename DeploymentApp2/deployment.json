@@ -1,0 +1,245 @@
+{
+  "siteName": "Humanist.Web",
+  "physicalPath": ".",
+
+  "allowMissingCertificates": true,
+  "bindings": [
+    {
+      "protocol": "http",
+      "ip": "*",
+      "port": 80,
+      "host": "humanist.local"
+    },
+    {
+      "protocol": "https",
+      "ip": "*",
+      "port": 443,
+      "host": "humanist.local",
+      "certThumbprint": "ABCD1234...",
+      "certStore": "My",
+      "skipIfCertMissing": true
+    }
+  ],
+
+  "appPool": {
+    "name": "Humanist.AppPool",
+    "runtimeVersion": "v4.0",
+    "pipelineMode": "Integrated",
+    "enable32Bit": false,
+    "autoStart": true,
+    "alwaysRunning": false,
+    "identity": { "type": "ApplicationPoolIdentity" },
+    "recycle": {
+      "time": "00:00:00",
+      "privateMemoryMB": 0
+    }
+  },
+
+  "applications": [
+    {
+      "path": "/admin",
+      "physicalPath": "content\\admin\\HUMANIST"
+    },
+    {
+      "path": "/ss",
+      "physicalPath": "content\\ss\\HSPORTAL"
+    },
+
+    {
+      "path": "/admin/HXCORE",
+      "physicalPath": "content\\admin\\HXCORE"
+    },
+    {
+      "path": "/admin/HXCRRMGM",
+      "physicalPath": "content\\admin\\HXCRRMGM"
+    },
+    {
+      "path": "/admin/HXLEAVES",
+      "physicalPath": "content\\admin\\HXLEAVES"
+    },
+    {
+      "path": "/admin/HXLRNDEV",
+      "physicalPath": "content\\admin\\HXLRNDEV"
+    },
+    {
+      "path": "/admin/HXORGMGM",
+      "physicalPath": "content\\admin\\HXORGMGM"
+    },
+    {
+      "path": "/admin/HXPADMIN",
+      "physicalPath": "content\\admin\\HXPADMIN"
+    },
+    {
+      "path": "/admin/HXPAYROL",
+      "physicalPath": "content\\admin\\HXPAYROL"
+    },
+    {
+      "path": "/admin/HXPDPL",
+      "physicalPath": "content\\admin\\HXPDPL"
+    },
+    {
+      "path": "/admin/HXPRFMGM",
+      "physicalPath": "content\\admin\\HXPRFMGM"
+    },
+    {
+      "path": "/admin/HXPRVINS",
+      "physicalPath": "content\\admin\\HXPRVINS"
+    },
+    {
+      "path": "/admin/HXRCRMGM",
+      "physicalPath": "content\\admin\\HXRCRMGM"
+    },
+    {
+      "path": "/admin/HXRETFND",
+      "physicalPath": "content\\admin\\HXRETFND"
+    },
+    {
+      "path": "/admin/HXSALADM",
+      "physicalPath": "content\\admin\\HXSALADM"
+    },
+    {
+      "path": "/admin/HXSUGCPL",
+      "physicalPath": "content\\admin\\HXSUGCPL"
+    },
+    {
+      "path": "/admin/HXSYSMGM",
+      "physicalPath": "content\\admin\\HXSYSMGM"
+    },
+    {
+      "path": "/admin/HXSYSMNT",
+      "physicalPath": "content\\admin\\HXSYSMNT"
+    },
+    {
+      "path": "/admin/HXSYSPRG",
+      "physicalPath": "content\\admin\\HXSYSPRG"
+    },
+    {
+      "path": "/admin/HXTRVEXP",
+      "physicalPath": "content\\admin\\HXTRVEXP"
+    },
+
+    {
+      "path": "/ss/SSADVREQ",
+      "physicalPath": "content\\ss\\SSADVREQ"
+    },
+    {
+      "path": "/ss/SSBUSCRD",
+      "physicalPath": "content\\ss\\SSBUSCRD"
+    },
+    {
+      "path": "/ss/SSCRRMGM",
+      "physicalPath": "content\\ss\\SSCRRMGM"
+    },
+    {
+      "path": "/ss/SSDOCREQ",
+      "physicalPath": "content\\ss\\SSDOCREQ"
+    },
+    {
+      "path": "/ss/SSEMPDTM",
+      "physicalPath": "content\\ss\\SSEMPDTM"
+    },
+    {
+      "path": "/ss/SSEMPREQ",
+      "physicalPath": "content\\ss\\SSEMPREQ"
+    },
+    {
+      "path": "/ss/SSLEAVES",
+      "physicalPath": "content\\ss\\SSLEAVES"
+    },
+    {
+      "path": "/ss/SSLRNDEV",
+      "physicalPath": "content\\ss\\SSLRNDEV"
+    },
+    {
+      "path": "/ss/SSMDEMPP",
+      "physicalPath": "content\\ss\\SSMDEMPP"
+    },
+    {
+      "path": "/ss/SSNRMREQ",
+      "physicalPath": "content\\ss\\SSNRMREQ"
+    },
+    {
+      "path": "/ss/SSORGCHT",
+      "physicalPath": "content\\ss\\SSORGCHT"
+    },
+    {
+      "path": "/ss/SSOVERTR",
+      "physicalPath": "content\\ss\\SSOVERTR"
+    },
+    {
+      "path": "/ss/SSPAYROL",
+      "physicalPath": "content\\ss\\SSPAYROL"
+    },
+    {
+      "path": "/ss/SSPOSREQ",
+      "physicalPath": "content\\ss\\SSPOSREQ"
+    },
+    {
+      "path": "/ss/SSPRFMGM",
+      "physicalPath": "content\\ss\\SSPRFMGM"
+    },
+    {
+      "path": "/ss/SSPRMASG",
+      "physicalPath": "content\\ss\\SSPRMASG"
+    },
+    {
+      "path": "/ss/SSRCRMGM",
+      "physicalPath": "content\\ss\\SSRCRMGM"
+    },
+    {
+      "path": "/ss/SSSALADM",
+      "physicalPath": "content\\ss\\SSSALADM"
+    },
+    {
+      "path": "/ss/SSSUGCPL",
+      "physicalPath": "content\\ss\\SSSUGCPL"
+    },
+    {
+      "path": "/ss/SSSYSPRG",
+      "physicalPath": "content\\ss\\SSSYSPRG"
+    },
+    {
+      "path": "/ss/SSTIMATT",
+      "physicalPath": "content\\ss\\SSTIMATT"
+    },
+    {
+      "path": "/ss/SSTMPSTF",
+      "physicalPath": "content\\ss\\SSTMPSTF"
+    },
+    {
+      "path": "/ss/SSTRVEXP",
+      "physicalPath": "content\\ss\\SSTRVEXP"
+    }
+  ],
+
+  "env": { "ASPNETCORE_ENVIRONMENT": "Production" },
+
+  "acl": [
+    {
+      "path": "%IISROOT%\\Sites\\Humanist.Web",
+      "identity": "IIS_IUSRS",
+      "rights": "F"
+    }
+  ],
+
+  "features": {
+    "urlRewriteImport": "config\\rewrite.config",
+    "requestFiltering": { "maxAllowedContentLength": 52428800 },
+    "compression": {
+      "static": true,
+      "dynamic": true
+    }
+  },
+
+  "blueGreen": {
+    "enabled": false,
+    "activeSuffix": "_A",
+    "slotSuffix": "_B",
+    "healthUrls": [ "https://humanist.local/health", "http://humanist.local/health" ],
+    "healthTimeoutSeconds": 20,
+    "healthAttempts": 12,
+    "swapProtocolOrder": [ "https", "http" ],
+    "stopActiveBeforeSwap": false,
+    "preserveOldBindingsForRollback": false
+  }
+}

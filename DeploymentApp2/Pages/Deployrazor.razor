@@ -1,0 +1,480 @@
+﻿@page "/deploy"
+@using Microsoft.AspNetCore.Components.Web
+@rendermode InteractiveServer
+@using System.Text.Json
+@using Humanist.Deployer
+@inject DeploymentService Deployer
+@inject ILoggerFactory LoggerFactory
+
+<h2 class="mb-3">Humanist Deployment</h2>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 space-y-3">
+        <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold mb-2">Manifest (deployment.json)</h3>
+
+            <div class="mb-2">
+                <input type="file" @onchange="OnManifestFileSelected" accept=".json" />
+                <button class="ml-2 px-3 py-1 border rounded" @onclick="() => ManifestJson = Pretty(ManifestJson)">Pretty</button>
+            </div>
+
+            <textarea class="w-full h-72 font-mono text-sm p-2 border rounded"
+                      placeholder="deployment.json içeriğini yapıştır ya da dosya yükle"
+                      @bind="ManifestJson"></textarea>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                <div>
+                    <label class="text-sm">Paket ZIP yolu</label>
+                    <input class="w-full p-2 border rounded" @bind="ZipPath" placeholder="C:\src\paketler.zip" />
+                </div>
+                <div>
+                    <label class="text-sm">Base Deploy Dir</label>
+                    <input class="w-full p-2 border rounded" @bind="BaseDeployDir" placeholder="D:\Sites" />
+                </div>
+                <div>
+                    <label class="text-sm">Dry-Run</label>
+                    <div><input type="checkbox" @bind="DryRun" /></div>
+                </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2">
+                <button class="px-4 py-2 rounded bg-blue-600 text-white" @onclick="Start">
+                    @(DryRun ? "Dry-Run" : "Apply")
+                </button>
+                <button class="px-3 py-2 rounded border" @onclick="Cancel" disabled="@(!Running)">İptal</button>
+
+                <span class="text-sm text-gray-600">@StatusText</span>
+            </div>
+        </div>
+
+        <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold mb-2">Önizleme / Validasyon</h3>
+            @if (ValidationErrors.Count == 0)
+            {
+                <div class="text-green-700">Manifest geçerli görünüyor.</div>
+            }
+            else
+            {
+                <ul class="list-disc pl-6 text-red-700">
+                    @foreach (var e in ValidationErrors.ToList())
+                    {
+                        <li>@e</li>
+                    }
+                </ul>
+            }
+
+            @if (PreviewActions?.Count > 0)
+            {
+                <div class="mt-3">
+                    <div class="text-sm text-gray-600 mb-1">Planlanan adımlar:</div>
+                    <ul class="text-sm grid grid-cols-1 md:grid-cols-2 gap-y-1">
+                        @foreach (var a in PreviewActions.ToList())
+                        {
+                            <li>• <b>@a.Type</b> — @a.Description</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="space-y-3">
+        <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold mb-2">İlerleme</h3>
+            <div class="w-full bg-gray-200 rounded h-3 mb-2">
+                <div class="bg-green-600 h-3 rounded" style="width:@Progress%"></div>
+            </div>
+            <div class="text-sm">@ProgressText</div>
+        </div>
+
+        <div class="p-4 border rounded">
+            <h3 class="text-lg font-semibold mb-2">Log</h3>
+            <div class="h-80 overflow-auto bg-black text-green-200 p-2 font-mono text-xs">
+                @foreach (var line in GetLogSnapshot())
+                {
+                    <div>@line</div>
+                }
+            </div>
+            <button class="mt-2 px-3 py-1 border rounded" @onclick="ClearLog">Log'u temizle</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    // UI state
+    string ManifestJson = "";
+    string ZipPath = @"C:\src\paketler.zip";
+    string BaseDeployDir = @"c:\Sites";
+    bool DryRun = true;
+    bool Running = false;
+    string StatusText = "Hazır.";
+    double Progress = 0;
+    string ProgressText => $"{Math.Round(Progress, 1)}%";
+
+    // Thread-safe koleksiyonlar
+    private readonly List<string> _liveLog = new();
+    private readonly object _logLock = new object();
+    private List<PlanAction>? _previewActions = null;
+    private readonly List<string> _validationErrors = new();
+    private readonly object _validationLock = new object();
+
+    CancellationTokenSource? Cts;
+    private bool _isDisposed = false;
+
+    // Public properties with thread-safe access
+    private List<string> LiveLog
+    {
+        get
+        {
+            lock (_logLock)
+            {
+                return new List<string>(_liveLog);
+            }
+        }
+    }
+
+    private List<string> ValidationErrors
+    {
+        get
+        {
+            lock (_validationLock)
+            {
+                return new List<string>(_validationErrors);
+            }
+        }
+    }
+
+    private List<PlanAction>? PreviewActions
+    {
+        get => _previewActions;
+        set => _previewActions = value;
+    }
+
+    InMemoryLoggerProvider? _provider;
+
+    protected override void OnInitialized()
+    {
+        // optional defaults
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Render sonrası gereksiz StateHasChanged çağrılarını önle
+        if (!firstRender && Running)
+        {
+            // Sadece kritik durumlarda StateHasChanged çağır
+            // Bu, gereksiz render loop'larını önler
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _provider?.Dispose();
+        Cts?.Cancel();
+        Cts?.Dispose();
+    }
+
+    async Task OnManifestFileSelected(ChangeEventArgs e)
+    {
+        var files = (e.Value as Microsoft.AspNetCore.Components.Forms.IBrowserFile[] ?? Array.Empty<Microsoft.AspNetCore.Components.Forms.IBrowserFile>());
+        if (files.Length == 0) return;
+    }
+
+    void Cancel()
+    {
+        if (Running && Cts is not null && !Cts.IsCancellationRequested)
+        {
+            Cts.Cancel();
+            StatusText = "İptal istendi…";
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task Start()
+    {
+        if (Running) return;
+
+        // Validasyonları temizle - thread-safe
+        lock (_validationLock)
+        {
+            _validationErrors.Clear();
+        }
+
+        ClearLog();
+
+        Progress = 0;
+        Running = true;
+        StatusText = DryRun ? "Dry-run çalışıyor…" : "Apply çalışıyor…";
+        await InvokeAsync(StateHasChanged);
+
+        // 1) JSON parse + basit validasyon
+        SiteManifest? manifest = null;
+        try
+        {
+            manifest = SiteManifest.FromJson(ManifestJson);
+        }
+        catch (Exception ex)
+        {
+            AddValidationError($"Manifest JSON parse hatası: {ex.Message}");
+        }
+
+        if (manifest is null)
+        {
+            Running = false;
+            StatusText = "JSON geçersiz.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // Temel kontroller
+        if (string.IsNullOrWhiteSpace(ZipPath) || !System.IO.File.Exists(ZipPath))
+            AddValidationError($"Paket ZIP bulunamadı: {ZipPath}");
+        if (string.IsNullOrWhiteSpace(BaseDeployDir))
+            AddValidationError("BaseDeployDir boş olamaz.");
+        if (manifest.BlueGreen?.Enabled == true && (manifest.BlueGreen.HealthUrls is null || manifest.BlueGreen.HealthUrls.Count == 0))
+            AddValidationError("Blue/Green açık ama healthUrls boş.");
+
+        // 2) Plan önizleme (BuildPlan)
+        try
+        {
+            var plan = Deployer.BuildPlan(ManifestJson);
+            PreviewActions = plan.Actions;
+        }
+        catch (Exception ex)
+        {
+            AddValidationError($"Plan oluşturulamadı: {ex.Message}");
+        }
+
+        if (ValidationErrors.Count > 0)
+        {
+            Running = false;
+            StatusText = "Validasyon hatası.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // 3) canlı log dinlemek için özel provider - SADECE DEPLOYMENT LOGLARI
+        _provider = new InMemoryLoggerProvider(line =>
+        {
+            // Sadece deployment ile ilgili logları göster
+            if (ShouldDisplayLog(line))
+            {
+                AddLogLine(line);
+
+                // StateHasChanged'i throttle et - her log için değil, batch halinde
+                _ = ThrottledStateHasChanged();
+            }
+        }, "Humanist.Deployer"); // Sadece belirli kategori
+
+        LoggerFactory.AddProvider(_provider);
+
+        // 4) çalıştır
+        Cts = new CancellationTokenSource();
+        try
+        {
+            var progressTicker = new ProgressStepper(async p =>
+            {
+                if (Math.Abs(Progress - p) > 1) // Sadece önemli değişikliklerde güncelle
+                {
+                    Progress = p;
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
+
+            AddLogLine($"🚀 Starting {(DryRun ? "dry-run" : "actual")} deployment...");
+
+            // DryRun veya Apply
+            List<PlanAction> actions;
+            if (DryRun)
+            {
+                actions = await Deployer.DryRunAsync(ZipPath, ManifestJson, BaseDeployDir, Cts.Token);
+            }
+            else
+            {
+                actions = await Deployer.ApplyAsync(ZipPath, ManifestJson, BaseDeployDir, Cts.Token);
+            }
+
+            // bitti
+            Progress = 100;
+            StatusText = "Tamamlandı.";
+            AddLogLine("✅ Deployment completed successfully");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "İptal edildi.";
+            AddLogLine("⏹️ Deployment cancelled");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            AddLogLine($"[ERROR] {ex.Message}");
+            StatusText = "Hata oluştu.";
+            await InvokeAsync(StateHasChanged);
+        }
+        finally
+        {
+            Running = false;
+            _provider?.Dispose();
+            _provider = null;
+        }
+    }
+
+    // Log filtreleme - gereksiz Blazor/SignalR loglarını engelle
+    private bool ShouldDisplayLog(string logLine)
+    {
+        var excludedPatterns = new[]
+        {
+            "Microsoft.AspNetCore.Components.Server.ComponentHub",
+            "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher",
+            "Received hub invocation",
+            "Received confirmation for batch",
+            "OnRenderCompleted",
+            "InvocationMessage"
+        };
+
+        return !excludedPatterns.Any(pattern =>
+            logLine.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // StateHasChanged'i throttle et (saniyede maksimum 10 kez)
+    private DateTime _lastStateHasChanged = DateTime.MinValue;
+    private async Task ThrottledStateHasChanged()
+    {
+        var now = DateTime.Now;
+        if ((now - _lastStateHasChanged).TotalMilliseconds < 100) // 100ms throttle
+            return;
+
+        _lastStateHasChanged = now;
+
+        if (!_isDisposed)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // Thread-safe log methods
+    private void AddLogLine(string line)
+    {
+        if (_isDisposed) return;
+
+        lock (_logLock)
+        {
+            _liveLog.Add($"{DateTime.Now:HH:mm:ss} {line}");
+
+            // Log boyutunu sınırla
+            if (_liveLog.Count > 500) // Daha küçük limit
+            {
+                _liveLog.RemoveRange(0, 50);
+            }
+        }
+    }
+
+    private void ClearLog()
+    {
+        lock (_logLock)
+        {
+            _liveLog.Clear();
+        }
+    }
+
+    private List<string> GetLogSnapshot()
+    {
+        lock (_logLock)
+        {
+            return new List<string>(_liveLog);
+        }
+    }
+
+    // Thread-safe validation methods
+    private void AddValidationError(string error)
+    {
+        lock (_validationLock)
+        {
+            _validationErrors.Add(error);
+        }
+    }
+
+    static string Pretty(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch { return json; }
+    }
+
+    // ---- Filtrelenmiş Logger ----
+    sealed class InMemoryLoggerProvider : ILoggerProvider
+    {
+        private readonly Action<string> _sink;
+        private readonly string _allowedCategory;
+
+        public InMemoryLoggerProvider(Action<string> sink, string allowedCategory = "Humanist.Deployer")
+        {
+            _sink = sink;
+            _allowedCategory = allowedCategory;
+        }
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            // Sadece belirli kategorileri logla
+            if (categoryName.StartsWith(_allowedCategory) ||
+                categoryName.Contains("Deployment", StringComparison.OrdinalIgnoreCase))
+            {
+                return new InMemoryLogger(_sink, categoryName);
+            }
+            return new NullLogger(); // Diğer kategoriler için boş logger
+        }
+
+        public void Dispose() { }
+
+        private sealed class InMemoryLogger : ILogger
+        {
+            private readonly Action<string> _sink;
+            private readonly string _category;
+
+            public InMemoryLogger(Action<string> sink, string category)
+            {
+                _sink = sink;
+                _category = category;
+            }
+
+            public IDisposable BeginScope<TState>(TState state) => default!;
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                var msg = formatter(state, exception);
+                _sink($"[{_category}] {msg}");
+            }
+        }
+
+        private sealed class NullLogger : ILogger
+        {
+            public IDisposable BeginScope<TState>(TState state) => default!;
+            public bool IsEnabled(LogLevel logLevel) => false;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
+        }
+    }
+
+    sealed class ProgressStepper
+    {
+        private readonly Func<double, Task> _set;
+        private double _p = 0;
+
+        public ProgressStepper(Func<double, Task> set)
+        {
+            _set = set;
+            _ = set(0);
+        }
+
+        public async void Step(double delta)
+        {
+            _p = Math.Min(100, _p + delta);
+            await _set(_p);
+        }
+    }
+}
