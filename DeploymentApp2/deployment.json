@@ -1,245 +1,337 @@
 {
-  "siteName": "Humanist.Web",
-  "physicalPath": ".",
-
-  "allowMissingCertificates": true,
-  "bindings": [
-    {
-      "protocol": "http",
-      "ip": "*",
-      "port": 80,
-      "host": "humanist.local"
-    },
-    {
-      "protocol": "https",
-      "ip": "*",
-      "port": 443,
-      "host": "humanist.local",
-      "certThumbprint": "ABCD1234...",
-      "certStore": "My",
-      "skipIfCertMissing": true
-    }
-  ],
-
-  "appPool": {
-    "name": "Humanist.AppPool",
-    "runtimeVersion": "v4.0",
-    "pipelineMode": "Integrated",
-    "enable32Bit": false,
-    "autoStart": true,
-    "alwaysRunning": false,
-    "identity": { "type": "ApplicationPoolIdentity" },
-    "recycle": {
-      "time": "00:00:00",
-      "privateMemoryMB": 0
-    }
+  "variables": {
+    "SitesRoot": "%SystemDrive%\\inetpub\\wwwroot",
+    "VersionDir": "%SystemDrive%\\inetpub\\wwwroot\\Humanist.Web_current"
   },
 
-  "applications": [
+  "appPools": [
     {
-      "path": "/admin",
-      "physicalPath": "content\\admin\\HUMANIST"
+      "name": "Humanist.AppPool",
+      "runtimeVersion": "v4.0",
+      "pipelineMode": "Integrated",
+      "enable32Bit": false,
+      "autoStart": true,
+      "alwaysRunning": false,
+      "identity": { "type": "ApplicationPoolIdentity" },
+      "recycle": {
+        "time": "00:00:00",
+        "privateMemoryMB": 0
+      }
     },
     {
-      "path": "/ss",
-      "physicalPath": "content\\ss\\HSPORTAL"
-    },
-
-    {
-      "path": "/admin/HXCORE",
-      "physicalPath": "content\\admin\\HXCORE"
-    },
-    {
-      "path": "/admin/HXCRRMGM",
-      "physicalPath": "content\\admin\\HXCRRMGM"
+      "name": "Humanist.AdminPool",
+      "basedOn": "Humanist.AppPool",
+      "runtimeVersion": "v4.0",
+      "pipelineMode": "Integrated",
+      "enable32Bit": false,
+      "autoStart": true,
+      "alwaysRunning": true
     },
     {
-      "path": "/admin/HXLEAVES",
-      "physicalPath": "content\\admin\\HXLEAVES"
-    },
-    {
-      "path": "/admin/HXLRNDEV",
-      "physicalPath": "content\\admin\\HXLRNDEV"
-    },
-    {
-      "path": "/admin/HXORGMGM",
-      "physicalPath": "content\\admin\\HXORGMGM"
-    },
-    {
-      "path": "/admin/HXPADMIN",
-      "physicalPath": "content\\admin\\HXPADMIN"
-    },
-    {
-      "path": "/admin/HXPAYROL",
-      "physicalPath": "content\\admin\\HXPAYROL"
-    },
-    {
-      "path": "/admin/HXPDPL",
-      "physicalPath": "content\\admin\\HXPDPL"
-    },
-    {
-      "path": "/admin/HXPRFMGM",
-      "physicalPath": "content\\admin\\HXPRFMGM"
-    },
-    {
-      "path": "/admin/HXPRVINS",
-      "physicalPath": "content\\admin\\HXPRVINS"
-    },
-    {
-      "path": "/admin/HXRCRMGM",
-      "physicalPath": "content\\admin\\HXRCRMGM"
-    },
-    {
-      "path": "/admin/HXRETFND",
-      "physicalPath": "content\\admin\\HXRETFND"
-    },
-    {
-      "path": "/admin/HXSALADM",
-      "physicalPath": "content\\admin\\HXSALADM"
-    },
-    {
-      "path": "/admin/HXSUGCPL",
-      "physicalPath": "content\\admin\\HXSUGCPL"
-    },
-    {
-      "path": "/admin/HXSYSMGM",
-      "physicalPath": "content\\admin\\HXSYSMGM"
-    },
-    {
-      "path": "/admin/HXSYSMNT",
-      "physicalPath": "content\\admin\\HXSYSMNT"
-    },
-    {
-      "path": "/admin/HXSYSPRG",
-      "physicalPath": "content\\admin\\HXSYSPRG"
-    },
-    {
-      "path": "/admin/HXTRVEXP",
-      "physicalPath": "content\\admin\\HXTRVEXP"
-    },
-
-    {
-      "path": "/ss/SSADVREQ",
-      "physicalPath": "content\\ss\\SSADVREQ"
-    },
-    {
-      "path": "/ss/SSBUSCRD",
-      "physicalPath": "content\\ss\\SSBUSCRD"
-    },
-    {
-      "path": "/ss/SSCRRMGM",
-      "physicalPath": "content\\ss\\SSCRRMGM"
-    },
-    {
-      "path": "/ss/SSDOCREQ",
-      "physicalPath": "content\\ss\\SSDOCREQ"
-    },
-    {
-      "path": "/ss/SSEMPDTM",
-      "physicalPath": "content\\ss\\SSEMPDTM"
-    },
-    {
-      "path": "/ss/SSEMPREQ",
-      "physicalPath": "content\\ss\\SSEMPREQ"
-    },
-    {
-      "path": "/ss/SSLEAVES",
-      "physicalPath": "content\\ss\\SSLEAVES"
-    },
-    {
-      "path": "/ss/SSLRNDEV",
-      "physicalPath": "content\\ss\\SSLRNDEV"
-    },
-    {
-      "path": "/ss/SSMDEMPP",
-      "physicalPath": "content\\ss\\SSMDEMPP"
-    },
-    {
-      "path": "/ss/SSNRMREQ",
-      "physicalPath": "content\\ss\\SSNRMREQ"
-    },
-    {
-      "path": "/ss/SSORGCHT",
-      "physicalPath": "content\\ss\\SSORGCHT"
-    },
-    {
-      "path": "/ss/SSOVERTR",
-      "physicalPath": "content\\ss\\SSOVERTR"
-    },
-    {
-      "path": "/ss/SSPAYROL",
-      "physicalPath": "content\\ss\\SSPAYROL"
-    },
-    {
-      "path": "/ss/SSPOSREQ",
-      "physicalPath": "content\\ss\\SSPOSREQ"
-    },
-    {
-      "path": "/ss/SSPRFMGM",
-      "physicalPath": "content\\ss\\SSPRFMGM"
-    },
-    {
-      "path": "/ss/SSPRMASG",
-      "physicalPath": "content\\ss\\SSPRMASG"
-    },
-    {
-      "path": "/ss/SSRCRMGM",
-      "physicalPath": "content\\ss\\SSRCRMGM"
-    },
-    {
-      "path": "/ss/SSSALADM",
-      "physicalPath": "content\\ss\\SSSALADM"
-    },
-    {
-      "path": "/ss/SSSUGCPL",
-      "physicalPath": "content\\ss\\SSSUGCPL"
-    },
-    {
-      "path": "/ss/SSSYSPRG",
-      "physicalPath": "content\\ss\\SSSYSPRG"
-    },
-    {
-      "path": "/ss/SSTIMATT",
-      "physicalPath": "content\\ss\\SSTIMATT"
-    },
-    {
-      "path": "/ss/SSTMPSTF",
-      "physicalPath": "content\\ss\\SSTMPSTF"
-    },
-    {
-      "path": "/ss/SSTRVEXP",
-      "physicalPath": "content\\ss\\SSTRVEXP"
+      "name": "Humanist.SSPool",
+      "basedOn": "Humanist.AppPool",
+      "runtimeVersion": "v4.0",
+      "pipelineMode": "Integrated",
+      "enable32Bit": false,
+      "autoStart": true,
+      "alwaysRunning": false
     }
   ],
 
-  "env": { "ASPNETCORE_ENVIRONMENT": "Production" },
-
-  "acl": [
+  "sites": [
     {
-      "path": "%IISROOT%\\Sites\\Humanist.Web",
-      "identity": "IIS_IUSRS",
-      "rights": "F"
-    }
-  ],
+      "siteName": "Humanist.Web",
+      "physicalPath": ".",
+      "allowMissingCertificates": true,
 
-  "features": {
-    "urlRewriteImport": "config\\rewrite.config",
-    "requestFiltering": { "maxAllowedContentLength": 52428800 },
-    "compression": {
-      "static": true,
-      "dynamic": true
-    }
-  },
+      "bindings": [
+        {
+          "protocol": "http",
+          "ip": "*",
+          "port": 80,
+          "host": "humanist.local"
+        },
+        {
+          "protocol": "https",
+          "ip": "*",
+          "port": 443,
+          "host": "humanist.local",
+          "certThumbprint": "ABCD1234...",
+          "certStore": "My",
+          "skipIfCertMissing": true
+        }
+      ],
 
-  "blueGreen": {
-    "enabled": false,
-    "activeSuffix": "_A",
-    "slotSuffix": "_B",
-    "healthUrls": [ "https://humanist.local/health", "http://humanist.local/health" ],
-    "healthTimeoutSeconds": 20,
-    "healthAttempts": 12,
-    "swapProtocolOrder": [ "https", "http" ],
-    "stopActiveBeforeSwap": false,
-    "preserveOldBindingsForRollback": false
-  }
+      "appPool": {
+        "name": "Humanist.AppPool",
+        "runtimeVersion": "v4.0",
+        "pipelineMode": "Integrated",
+        "enable32Bit": false,
+        "autoStart": true,
+        "alwaysRunning": false,
+        "identity": { "type": "ApplicationPoolIdentity" },
+        "recycle": {
+          "time": "00:00:00",
+          "privateMemoryMB": 0
+        }
+      },
+
+      "applications": [
+        {
+          "path": "/",
+          "physicalPath": ".",
+          "appPool": "Humanist.AppPool"
+        },
+
+        {
+          "path": "/admin",
+          "physicalPath": "content\\admin\\HUMANIST",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/ss",
+          "physicalPath": "content\\ss\\HSPORTAL",
+          "appPool": "Humanist.SSPool"
+        },
+
+        {
+          "path": "/admin/HXCORE",
+          "physicalPath": "content\\admin\\HXCORE",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXCRRMGM",
+          "physicalPath": "content\\admin\\HXCRRMGM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXLEAVES",
+          "physicalPath": "content\\admin\\HXLEAVES",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXLRNDEV",
+          "physicalPath": "content\\admin\\HXLRNDEV",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXORGMGM",
+          "physicalPath": "content\\admin\\HXORGMGM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXPADMIN",
+          "physicalPath": "content\\admin\\HXPADMIN",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXPAYROL",
+          "physicalPath": "content\\admin\\HXPAYROL",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXPDPL",
+          "physicalPath": "content\\admin\\HXPDPL",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXPRFMGM",
+          "physicalPath": "content\\admin\\HXPRFMGM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXPRVINS",
+          "physicalPath": "content\\admin\\HXPRVINS",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXRCRMGM",
+          "physicalPath": "content\\admin\\HXRCRMGM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXRETFND",
+          "physicalPath": "content\\admin\\HXRETFND",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXSALADM",
+          "physicalPath": "content\\admin\\HXSALADM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXSUGCPL",
+          "physicalPath": "content\\admin\\HXSUGCPL",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXSYSMGM",
+          "physicalPath": "content\\admin\\HXSYSMGM",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXSYSMNT",
+          "physicalPath": "content\\admin\\HXSYSMNT",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXSYSPRG",
+          "physicalPath": "content\\admin\\HXSYSPRG",
+          "appPool": "Humanist.AdminPool"
+        },
+        {
+          "path": "/admin/HXTRVEXP",
+          "physicalPath": "content\\admin\\HXTRVEXP",
+          "appPool": "Humanist.AdminPool"
+        },
+
+        {
+          "path": "/ss/SSADVREQ",
+          "physicalPath": "content\\ss\\SSADVREQ",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSBUSCRD",
+          "physicalPath": "content\\ss\\SSBUSCRD",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSCRRMGM",
+          "physicalPath": "content\\ss\\SSCRRMGM",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSDOCREQ",
+          "physicalPath": "content\\ss\\SSDOCREQ",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSEMPDTM",
+          "physicalPath": "content\\ss\\SSEMPDTM",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSEMPREQ",
+          "physicalPath": "content\\ss\\SSEMPREQ",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSLEAVES",
+          "physicalPath": "content\\ss\\SSLEAVES",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSLRNDEV",
+          "physicalPath": "content\\ss\\SSLRNDEV",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSMDEMPP",
+          "physicalPath": "content\\ss\\SSMDEMPP",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSNRMREQ",
+          "physicalPath": "content\\ss\\SSNRMREQ",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSORGCHT",
+          "physicalPath": "content\\ss\\SSORGCHT",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSOVERTR",
+          "physicalPath": "content\\ss\\SSOVERTR",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSPAYROL",
+          "physicalPath": "content\\ss\\SSPAYROL",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSPOSREQ",
+          "physicalPath": "content\\ss\\SSPOSREQ",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSPRFMGM",
+          "physicalPath": "content\\ss\\SSPRFMGM",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSPRMASG",
+          "physicalPath": "content\\ss\\SSPRMASG",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSRCRMGM",
+          "physicalPath": "content\\ss\\SSRCRMGM",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSSALADM",
+          "physicalPath": "content\\ss\\SSSALADM",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSSUGCPL",
+          "physicalPath": "content\\ss\\SSSUGCPL",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSSYSPRG",
+          "physicalPath": "content\\ss\\SSSYSPRG",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSTIMATT",
+          "physicalPath": "content\\ss\\SSTIMATT",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSTMPSTF",
+          "physicalPath": "content\\ss\\SSTMPSTF",
+          "appPool": "Humanist.SSPool"
+        },
+        {
+          "path": "/ss/SSTRVEXP",
+          "physicalPath": "content\\ss\\SSTRVEXP",
+          "appPool": "Humanist.SSPool"
+        }
+      ],
+
+      "env": { "ASPNETCORE_ENVIRONMENT": "Production" },
+
+      "acl": [
+        {
+          "path": "%IISROOT%\\Sites\\Humanist.Web",
+          "identity": "IIS_IUSRS",
+          "rights": "F"
+        }
+      ],
+
+      "features": {
+        "urlRewriteImport": "config\\rewrite.config",
+        "requestFiltering": { "maxAllowedContentLength": 52428800 },
+        "compression": {
+          "static": true,
+          "dynamic": true
+        }
+      },
+
+      "blueGreen": {
+        "enabled": false,
+        "activeSuffix": "_A",
+        "slotSuffix": "_B",
+        "healthUrls": [ "https://humanist.local/health", "http://humanist.local/health" ],
+        "healthTimeoutSeconds": 20,
+        "healthAttempts": 12,
+        "swapProtocolOrder": [ "https", "http" ],
+        "stopActiveBeforeSwap": false,
+        "preserveOldBindingsForRollback": false
+      }
+    }
+  ]
 }

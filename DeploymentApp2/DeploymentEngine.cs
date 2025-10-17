@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,114 +16,6 @@ using Microsoft.Web.Administration;
 
 namespace Humanist.Deployer
 {
-    #region Manifest Models
-    public sealed class SiteManifest
-    {
-        [JsonPropertyName("siteName")] public string SiteName { get; set; } = default!;
-        [JsonPropertyName("physicalPath")] public string PhysicalPathInZip { get; set; } = ".";
-        [JsonPropertyName("bindings")] public List<BindingDef> Bindings { get; set; } = new();
-        [JsonPropertyName("appPool")] public AppPoolDef AppPool { get; set; } = new();
-        [JsonPropertyName("applications")] public List<ApplicationDef> Applications { get; set; } = new();
-        [JsonPropertyName("env")] public Dictionary<string, string>? Env { get; set; }
-        [JsonPropertyName("acl")] public List<AclDef>? Acls { get; set; }
-        [JsonPropertyName("features")] public FeaturesDef? Features { get; set; }
-        [JsonPropertyName("blueGreen")] public BlueGreenDef? BlueGreen { get; set; }
-
-        // Sertifika eksikse https binding'lerini atlayıp ilerle
-        [JsonPropertyName("allowMissingCertificates")] public bool AllowMissingCertificates { get; set; } = false;
-
-        public static SiteManifest FromJson(string json)
-            => JsonSerializer.Deserialize<SiteManifest>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            })!;
-    }
-
-    public sealed class BindingDef
-    {
-        [JsonPropertyName("protocol")] public string Protocol { get; set; } = "http"; // http | https
-        [JsonPropertyName("ip")] public string Ip { get; set; } = "*";
-        [JsonPropertyName("port")] public int Port { get; set; }
-        [JsonPropertyName("host")] public string Host { get; set; } = "";
-        [JsonPropertyName("certThumbprint")] public string? CertThumbprint { get; set; }
-        [JsonPropertyName("certStore")] public string CertStore { get; set; } = "My";
-
-        // Tekil binding için atlama bayrağı
-        [JsonPropertyName("skipIfCertMissing")] public bool SkipIfCertMissing { get; set; } = false;
-    }
-
-    public sealed class AppPoolDef
-    {
-        [JsonPropertyName("name")] public string Name { get; set; } = default!;
-        [JsonPropertyName("runtimeVersion")] public string RuntimeVersion { get; set; } = "v4.0";
-        [JsonPropertyName("pipelineMode")] public string PipelineMode { get; set; } = "Integrated"; // Classic | Integrated
-        [JsonPropertyName("identity")] public AppPoolIdentityDef Identity { get; set; } = new();
-        [JsonPropertyName("recycle")] public AppPoolRecycleDef Recycle { get; set; } = new();
-        [JsonPropertyName("enable32Bit")] public bool Enable32Bit { get; set; } = false;
-        [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
-        [JsonPropertyName("alwaysRunning")] public bool AlwaysRunning { get; set; } = false;
-    }
-
-    public sealed class AppPoolIdentityDef
-    {
-        [JsonPropertyName("type")] public string Type { get; set; } = "ApplicationPoolIdentity"; // LocalSystem|LocalService|NetworkService|SpecificUser
-        [JsonPropertyName("user")] public string? User { get; set; }
-        [JsonPropertyName("password")] public string? Password { get; set; }
-    }
-
-    public sealed class AppPoolRecycleDef
-    {
-        [JsonPropertyName("time")] public string Time { get; set; } = "00:00:00"; // 0 => off
-        [JsonPropertyName("privateMemoryMB")] public int PrivateMemoryMB { get; set; } = 0;
-    }
-
-    public sealed class ApplicationDef
-    {
-        [JsonPropertyName("path")] public string Path { get; set; } = "/api";                          // IIS application path
-        [JsonPropertyName("physicalPath")] public string PhysicalPathInZip { get; set; } = "content";  // ZIP içindeki göreli klasör
-    }
-
-    public sealed class AclDef
-    {
-        [JsonPropertyName("path")] public string Path { get; set; } = default!;
-        [JsonPropertyName("identity")] public string Identity { get; set; } = "IIS_IUSRS";
-        [JsonPropertyName("rights")] public string Rights { get; set; } = "M"; // F | M | R
-    }
-
-    public sealed class FeaturesDef
-    {
-        [JsonPropertyName("urlRewriteImport")] public string? UrlRewriteImport { get; set; }
-        [JsonPropertyName("requestFiltering")] public RequestFilteringDef? RequestFiltering { get; set; }
-        [JsonPropertyName("compression")] public CompressionDef? Compression { get; set; }
-    }
-
-    public sealed class RequestFilteringDef
-    {
-        [JsonPropertyName("maxAllowedContentLength")] public long? MaxAllowedContentLength { get; set; }
-    }
-
-    public sealed class CompressionDef
-    {
-        [JsonPropertyName("static")] public bool Static { get; set; } = true;
-        [JsonPropertyName("dynamic")] public bool Dynamic { get; set; } = true;
-    }
-
-    public sealed class BlueGreenDef
-    {
-        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = false;
-        [JsonPropertyName("activeSuffix")] public string ActiveSuffix { get; set; } = "_A";
-        [JsonPropertyName("slotSuffix")] public string SlotSuffix { get; set; } = "_B"; // passive
-        [JsonPropertyName("healthUrls")] public List<string>? HealthUrls { get; set; }
-        [JsonPropertyName("healthTimeoutSeconds")] public int HealthTimeoutSeconds { get; set; } = 15;
-        [JsonPropertyName("healthAttempts")] public int HealthAttempts { get; set; } = 10;
-        [JsonPropertyName("swapProtocolOrder")] public List<string> SwapProtocolOrder { get; set; } = new() { "https", "http" };
-        [JsonPropertyName("stopActiveBeforeSwap")] public bool StopActiveBeforeSwap { get; set; } = false;
-        [JsonPropertyName("preserveOldBindingsForRollback")] public bool PreserveOldBindingsForRollback { get; set; } = false;
-    }
-    #endregion
-
     #region Plan & Context
     public enum PlanActionType
     {
@@ -140,7 +31,7 @@ namespace Humanist.Deployer
     public sealed class DeployContext
     {
         public string ZipPath { get; init; } = default!;
-        public SiteManifest Manifest { get; init; } = default!;
+        public Manifest Manifest { get; init; } = default!;
         public string BaseDeployDir { get; init; } = default!;
         public bool DryRun { get; init; }
         public ILogger Logger { get; init; } = default!;
@@ -1330,7 +1221,7 @@ namespace Humanist.Deployer
         {
             _logger.LogInformation("📋 Building deployment plan...");
 
-            var manifest = SiteManifest.FromJson(manifestJson);
+            var manifest = Manifest.FromJson(manifestJson);
             var plan = new DeploymentPlan { UseBlueGreen = manifest.BlueGreen?.Enabled == true };
 
             plan.Add(PlanActionType.DeployContentAtomicSwitch, "Extract zip to versioned folder");
@@ -1372,7 +1263,7 @@ namespace Humanist.Deployer
             var ctx = new DeployContext
             {
                 ZipPath = zipPath,
-                Manifest = SiteManifest.FromJson(manifestJson),
+                Manifest = Manifest.FromJson(manifestJson),
                 BaseDeployDir = baseDeployDir,
                 DryRun = true,
                 Logger = _logger
@@ -1392,7 +1283,7 @@ namespace Humanist.Deployer
             var ctx = new DeployContext
             {
                 ZipPath = zipPath,
-                Manifest = SiteManifest.FromJson(manifestJson),
+                Manifest = Manifest.FromJson(manifestJson),
                 BaseDeployDir = baseDeployDir,
                 DryRun = false,
                 Logger = _logger

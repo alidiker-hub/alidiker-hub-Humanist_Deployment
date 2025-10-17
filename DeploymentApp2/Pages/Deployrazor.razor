@@ -209,10 +209,10 @@
         await InvokeAsync(StateHasChanged);
 
         // 1) JSON parse + basit validasyon
-        SiteManifest? manifest = null;
+        Manifest? manifest = null;
         try
         {
-            manifest = SiteManifest.FromJson(ManifestJson);
+            manifest = Manifest.FromJson(ManifestJson);
         }
         catch (Exception ex)
         {
