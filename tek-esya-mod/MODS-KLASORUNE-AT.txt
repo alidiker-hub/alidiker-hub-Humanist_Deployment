@@ -1,0 +1,20 @@
+Forge mod olarak tanınması için
+
+1) SADECE bu dosyayı at:
+   tekesya-1.0.0.jar
+
+   (Klasörün tamamını, zip, build.gradle, src değil!)
+
+2) Nereye:
+   Windows: %appdata%\.minecraft\mods\
+   veya launcher'ındaki "Mods" / "Bırak" alanı → aynı mods klasörü
+
+3) Oyun:
+   Minecraft 1.20.1 + Forge 47 (Fabric/NeoForge profili ile ÇALIŞMAZ)
+   Launcher'da önce Forge 1.20.1 kur → o profille başlat
+
+4) Kontrol:
+   Ana menü → Mods → listede "Tek Esya" veya modId "tekesya"
+   Yoksa: yanlış jar, yanlış klasör veya yanlış profil.
+
+5) İndirilen dosya .jar uzantılı olsun (.zip ise .jar yap)
