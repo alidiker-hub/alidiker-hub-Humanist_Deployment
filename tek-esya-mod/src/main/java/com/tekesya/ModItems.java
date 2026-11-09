@@ -5,15 +5,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/**
- * Tek esya burada kayit edilir.
- * Yeni esya eklemek istersen ayni kaliba bir satir daha yazman yeterli.
- */
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, TekEsyaMod.MOD_ID);
@@ -21,15 +19,14 @@ public final class ModItems {
     public static final DeferredRegister<CreativeModeTab> TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, TekEsyaMod.MOD_ID);
 
-    /** Yaratıcı menüdeki mor kare esya. */
-    public static final RegistryObject<Item> ORNEK_ESYA = ITEMS.register("ornek_esya",
-            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> KILIC = ITEMS.register("kilic",
+            () -> new SwordItem(Tiers.IRON, 3, -2.4F, new Item.Properties()));
 
-    public static final RegistryObject<CreativeModeTab> TEK_ESYA_SEKME = TABS.register("tek_esya",
+    public static final RegistryObject<CreativeModeTab> SEKME = TABS.register("kilic",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.tekesya"))
-                    .icon(() -> new ItemStack(ORNEK_ESYA.get()))
-                    .displayItems((params, output) -> output.accept(ORNEK_ESYA.get()))
+                    .icon(() -> new ItemStack(KILIC.get()))
+                    .displayItems((params, output) -> output.accept(KILIC.get()))
                     .build());
 
     private ModItems() {
