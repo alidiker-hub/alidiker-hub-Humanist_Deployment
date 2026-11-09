@@ -1,5 +1,0 @@
-Bu texture otomatik kopyalanır.
-Düzenlemen gereken dosya:
-  tek-esya-mod/benim-dosyalarim/kilic.png
-
-Sonra: yeniden-derle.sh veya yeniden-derle.bat
