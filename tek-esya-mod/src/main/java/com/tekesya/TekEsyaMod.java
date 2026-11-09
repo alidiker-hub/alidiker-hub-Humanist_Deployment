@@ -8,8 +8,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class TekEsyaMod {
     public static final String MOD_ID = "tekesya";
 
-    public TekEsyaMod(FMLJavaModLoadingContext context) {
-        IEventBus bus = context.getModEventBus();
+    public TekEsyaMod() {
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(bus);
     }
 }
