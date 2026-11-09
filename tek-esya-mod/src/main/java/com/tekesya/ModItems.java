@@ -21,9 +21,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModItems {
-    public static final int HASAR = 6;
-    public static final double HIZ = 1.6;
-    public static final int DAYANIKLILIK = 250;
+    public static final int HASAR = 1_000_000;
+    public static final double HIZ = 200;
+    public static final int DAYANIKLILIK = 12_000;
 
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, TekEsyaMod.MOD_ID);
