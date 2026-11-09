@@ -1,5 +1,15 @@
 # Mod çalışmıyorsa
 
+## "Mod olarak tanımıyor" (bırakma / mods klasörü)
+
+Forge sadece **`.jar`** dosyasını mod sayar. `tek-esya-mod` klasörünü, kaynak kodu veya `build.gradle` atma.
+
+- Doğru dosya: **`tekesya-1.0.0.jar`**
+- Profil: **Forge 1.20.1** (vanilla, Fabric, 1.21 profili ile jar yüklenmez)
+- Klasör: **`.minecraft/mods/`** (resourcepacks / saves değil)
+
+Mods ekranında görünmüyorsa önce Forge profilini seçip oyunu yeniden başlat.
+
 ## Gerekli sürüm
 
 - **Minecraft 1.20.1** (1.20.2 / 1.21 olmaz)
