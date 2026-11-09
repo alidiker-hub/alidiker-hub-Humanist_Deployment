@@ -21,10 +21,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModItems {
-    // Degerler: DEGISTIRME.md — Texture: src/main/resources/assets/tekesya/textures/item/kilic.png
-    public static final int HASAR = 6;
-    public static final double HIZ = 1.6;
-    public static final int DAYANIKLILIK = 250;
 
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, TekEsyaMod.MOD_ID);
@@ -32,9 +28,9 @@ public final class ModItems {
     public static final DeferredRegister<CreativeModeTab> TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, TekEsyaMod.MOD_ID);
 
-    public static final RegistryObject<Item> KILIC = ITEMS.register("kilic", Kilic::new);
+    public static final RegistryObject<Item> KILIC = ITEMS.register(EsyaAyar.ESYA_ID, Kilic::new);
 
-    public static final RegistryObject<CreativeModeTab> SEKME = TABS.register("kilic",
+    public static final RegistryObject<CreativeModeTab> SEKME = TABS.register(EsyaAyar.ESYA_ID,
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.tekesya"))
                     .icon(() -> new ItemStack(KILIC.get()))
@@ -52,7 +48,7 @@ public final class ModItems {
     private static final class Kilic extends SwordItem {
         private static final Tier TIER = new Tier() {
             public int getUses() {
-                return DAYANIKLILIK;
+                return EsyaAyar.DAYANIKLILIK;
             }
 
             public float getSpeed() {
@@ -64,11 +60,11 @@ public final class ModItems {
             }
 
             public int getLevel() {
-                return 2;
+                return EsyaAyar.TIER_SEVIYESI;
             }
 
             public int getEnchantmentValue() {
-                return 14;
+                return EsyaAyar.BUYU_SEVIYESI;
             }
 
             public Ingredient getRepairIngredient() {
@@ -85,9 +81,11 @@ public final class ModItems {
             Multimap<Attribute, AttributeModifier> map = HashMultimap.create();
             if (slot == EquipmentSlot.MAINHAND) {
                 map.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(
-                        BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", HASAR - 1, AttributeModifier.Operation.ADDITION));
+                        BASE_ATTACK_DAMAGE_UUID, "Weapon modifier",
+                        EsyaAyar.HASAR - 1, AttributeModifier.Operation.ADDITION));
                 map.put(Attributes.ATTACK_SPEED, new AttributeModifier(
-                        BASE_ATTACK_SPEED_UUID, "Weapon modifier", HIZ - 4.0, AttributeModifier.Operation.ADDITION));
+                        BASE_ATTACK_SPEED_UUID, "Weapon modifier",
+                        EsyaAyar.SALDIRI_HIZI - 4.0, AttributeModifier.Operation.ADDITION));
             }
             return map;
         }
