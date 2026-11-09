@@ -1,19 +1,5 @@
-KILIC TEXTURE — BURAYA KOY
+Bu texture otomatik kopyalanır.
+Düzenlemen gereken dosya:
+  tek-esya-mod/benim-dosyalarim/kilic.png
 
-1) Bu klasördeki kilic.png dosyasının ÜZERİNE kendi PNG'ni yaz.
-   - Boyut: 16 x 16 piksel (veya 32 x 32; 16 önerilir)
-   - Arka plan: şeffaf
-   - Dosya adı: kilic.png (değiştirme)
-
-2) İstatistik / hasar için Java:
-   tek-esya-mod/src/main/java/com/tekesya/EsyaAyar.java
-
-3) Oyundaki Türkçe/İngilizce isim:
-   ../lang/tr_tr.json
-   ../lang/en_us.json
-
-4) Jar üret:
-   tek-esya-mod/yeniden-derle.sh
-
-Minecraft bu dosyayı şu model üzerinden okur:
-../models/item/kilic.json
+Sonra: yeniden-derle.sh veya yeniden-derle.bat
