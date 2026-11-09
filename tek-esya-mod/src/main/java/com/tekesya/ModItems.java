@@ -21,6 +21,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModItems {
+    // Degerler: DEGISTIRME.md — Texture: src/main/resources/assets/tekesya/textures/item/kilic.png
     public static final int HASAR = 6;
     public static final double HIZ = 1.6;
     public static final int DAYANIKLILIK = 250;
